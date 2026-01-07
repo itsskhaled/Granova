@@ -5,15 +5,27 @@ import sabel from "@/app/Images/sabel.png";
 import { marhey } from "../layout";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import { SplitText } from "gsap/all";
+import { DrawSVGPlugin, MotionPathPlugin, SplitText } from "gsap/all";
 import { useRef } from "react";
 
-gsap.registerPlugin(useGSAP, SplitText);
+gsap.registerPlugin(useGSAP, SplitText, DrawSVGPlugin, MotionPathPlugin);
 export default function HeroJSX() {
 
     const titleRef = useRef(null);
     const subTitleRef = useRef(null);
     const imageRef = useRef(null);
+    const featureEnergyRef = useRef(null);
+    const featureSugarRef = useRef(null);
+    const featurePreservativesRef = useRef(null);
+
+    const pathRef = useRef(null);
+
+    const PATHS = {
+        mobile: "M614.579,49.714 C614.579,49.714 719.369,87.074 532.373,112.86 345.301,138.61 343.923,130.003 343.923,130.003",
+        tablet: "M614.579,49.714 C614.579,49.714 719.369,87.074 532.373,112.86 345.301,138.61 343.923,130.003 343.923,130.003",
+        desktop: "M1242.98001,-83.321 C1242.98001,-83.321 1007.27001,145.195 820.25001,170.963 633.20701,196.722 -48.90599,101.228 -48.90599,101.228",
+    };
+
 
     useGSAP(() => {
         const tl = gsap.timeline();
@@ -36,8 +48,8 @@ export default function HeroJSX() {
             rotate: 360,
             x: 500,
             opacity: 0,
-            duration:5,
-            ease:"elastic.out"
+            duration: 5,
+            ease: "elastic.out"
         })
         const features = gsap.utils.toArray(".featur");
         tl.from(features, {
@@ -45,7 +57,7 @@ export default function HeroJSX() {
             filter: "blur(10px)",
             duration: 0.8,
             stagger: { each: 0.04 }
-        },"<")
+        }, "<")
         tl.from(subTitleSplit.lines, {
             y: 150,
             opacity: 0,
@@ -55,6 +67,42 @@ export default function HeroJSX() {
             rotateY: 180
         }, "<")
 
+        const placeOnPath = (el, progress) => {
+            if (!el || !pathRef.current) return;
+            const tween = gsap.set(el, {
+                motionPath: {
+                    path: pathRef.current,
+                    align: pathRef.current,
+                    alignOrigin: [0.5, 0.5],
+                    start: progress,
+                    end: progress,
+                },
+            });
+
+        }
+
+        const setPathAndReposition = (d) => {
+            pathRef.current?.setAttribute("d", d);
+            MotionPathPlugin.cacheRawPathMeasurements(pathRef.current, true);
+            placeOnPath(featureEnergyRef.current, 0);
+            placeOnPath(featureSugarRef.current, 0.5);
+            placeOnPath(featurePreservativesRef.current, 1);
+        }
+        const mm = gsap.matchMedia();
+        mm.add({
+            isMobile: "(max-width: 639px)",
+            isTablet: "(min-width: 640px) and (max-width: 1023px)",
+            isDesktop: "(min-width: 1024px)",
+        }, (context) => {
+            const { isMobile, isTablet, isDesktop } = context.conditions;
+            if (isMobile) setPathAndReposition(PATHS.mobile);
+            if (isTablet) setPathAndReposition(PATHS.tablet);
+            if (isDesktop) setPathAndReposition(PATHS.desktop);
+
+            return () => { };
+        }
+        );
+        return () => mm.revert();
     })
     return (
         // bg-[#792e1e]
@@ -68,30 +116,31 @@ export default function HeroJSX() {
                 <h2 className="subTitle text-1xl md:text-3xl lg:text-3xl">ابدأ يومك بطاقة صحية وطعم غني</h2>
                 <h3 className="subTitle text-xl md:text-2xl lg:text-2xl">جرانولا جرانوفا مصنوعة بعناية من مكونات طبيعية 100%</h3>
             </div>
-            <div className="featur absolute inset-0 pointer-events-none">
-
-                <div className="absolute top-100 md:top-90 lg:top-55 right-10 md:right-25 lg:right-5 rotate-5">
-                    <h1 className="font-bold text-xs md:text-base lg:text-3xl bg-[#cadc29]
+            <svg xmlns="http://www.w3.org/2000/svg" width="926" height="148" fill="none" overflow="visible" className="absolute">
+                <path ref={pathRef} id="energyPath" d={PATHS.desktop} fill="transparent" stroke="none">
+                </path>
+            </svg>
+            {/* top-100 md:top-90 lg:top-55 right-10 md:right-25 lg:right-5  */}
+            <div ref={featureEnergyRef} className="featur absolute rotate-5">
+                <h1 className="font-bold text-xs md:text-base lg:text-3xl bg-[#cadc29]
                     px-2 md:px-3 lg:px-4 py-1 md:py-2 rounded-br-xl rounded-tl-xl text-[#027e32]">
-                        طـــاقــة
-                    </h1>
-                </div>
+                    طـــاقــة
+                </h1>
+            </div>
 
 
-                <div className="featur absolute top-115 md:top-100 lg:top-120 right-20 md:right-50 lg:right-100">
-                    <h1 className="font-bold text-xs md:text-base lg:text-3xl bg-[#eb1952]
+            <div ref={featureSugarRef} className="featur absolute">
+                <h1 className="font-bold text-xs md:text-base lg:text-3xl bg-[#eb1952]
                     px-2 md:px-3 lg:px-4 py-1 md:py-2 rounded-br-xl rounded-tl-xl text-white">
-                        بــدون ســكـر مُكــرر
-                    </h1>
-                </div>
+                    بــدون ســكـر مُكــرر
+                </h1>
+            </div>
 
-                {/* بدون مواد حافظة */}
-                <div className="featur absolute top-120 md:top-120 lg:top-100 left-10 md:left-25 lg:left-50">
-                    <h1 className="font-bold text-xs md:text-base lg:text-3xl
+            <div ref={featurePreservativesRef} className="featur absolute">
+                <h1 className="font-bold text-xs md:text-base lg:text-3xl
                         px-2 md:px-3 lg:px-4 py-1 md:py-2 rounded-br-xl rounded-tl-xl text-[#cadc29] bg-[#027e32]">
-                        بــدون مــواد حــافـظة
-                    </h1>
-                </div>
+                    بــدون مــواد حــافـظة
+                </h1>
             </div>
         </section>
     );
